@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // import HelloWorld from '@/components/HelloWorld.vue';
-import { useTheme, useDisplay } from 'vuetify';
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 
+import { useDisplay } from 'vuetify';
+import type User from "@/interfaces/HomeViewInterface";
 const { width, smAndDown, mobile, mdAndUp } = useDisplay();
 
 const jsonLd = JSON.stringify(
@@ -25,6 +26,15 @@ interface FilePreview {
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const file = ref<FilePreview | null>(null);
+const snackbarOpen = ref<boolean | undefined>(false);
+const timeout = ref<number | undefined>(2000);
+const user: User = reactive({
+  name: '',
+  email: '',
+  phone: '',
+  noticePeriod: '',
+  expectedSalary: '',
+});
 
 const triggerFileUpload = () => {
   fileInput.value?.click();
@@ -52,6 +62,14 @@ const removeFile = () => {
     fileInput.value.value = '';
   }
 };
+
+const isPdf = (type: string) => {
+  return type === 'application/pdf';
+};
+
+const submit = () => {
+  snackbarOpen.value = true;
+};
 </script>
 
 <template>
@@ -61,6 +79,22 @@ const removeFile = () => {
       <span>{{ '&nbsp;' }}Your Job Search</span>
       <span class="dot">.</span>
     </div>
+    <v-dialog
+      v-model="snackbarOpen"
+      width="auto"
+    >
+      <v-card
+        max-width="400"
+        text="Thanks for your application. Our agent will contact you soon."
+        title="Thank you"
+      >
+        <template v-slot:actions>
+          <v-btn class="ms-auto" variant="text" @click="snackbarOpen = false">
+            Okay
+          </v-btn>
+        </template>
+      </v-card>
+    </v-dialog>
     <v-row no-gutters :class="`custom-card${smAndDown ? '__sm' : '__lg'}`">
       <v-col
         cols="12"
@@ -193,6 +227,7 @@ const removeFile = () => {
               Name
             </div>
             <v-text-field
+              v-model="user.name"
               rounded="0.375rem"
               color="#111827"
               base-color="#111827"
@@ -200,7 +235,7 @@ const removeFile = () => {
               hide-details
               density="compact"
               variant="outlined"
-            ></v-text-field>
+            />
           </div>
           <div
             :class="`custom-card${
@@ -215,6 +250,7 @@ const removeFile = () => {
               Phone
             </div>
             <v-text-field
+              v-model="user.phone"
               rounded="0.375rem"
               color="#111827"
               base-color="#111827"
@@ -222,17 +258,43 @@ const removeFile = () => {
               hide-details
               density="compact"
               variant="outlined"
-            ></v-text-field>
+            />
           </div>
-          <div :class="`custom-card${
+          <div
+            :class="`custom-card${
               smAndDown ? '__sm' : '__lg'
-            }--content--form--item`">
+            }--content--form--item`"
+          >
             <div
               :class="`custom-card${
                 smAndDown ? '__sm' : '__lg'
               }--content--form--item--label`"
             >
-            Upload
+              Email
+            </div>
+            <v-text-field
+              v-model="user.email"
+              rounded="0.375rem"
+              color="#111827"
+              base-color="#111827"
+              width="100%"
+              hide-details
+              type="email"
+              density="compact"
+              variant="outlined"
+            />
+          </div>
+          <div
+            :class="`custom-card${
+              smAndDown ? '__sm' : '__lg'
+            }--content--form--item`"
+          >
+            <div
+              :class="`custom-card${
+                smAndDown ? '__sm' : '__lg'
+              }--content--form--item--label`"
+            >
+              Upload
             </div>
             <div>
               <div
@@ -241,11 +303,11 @@ const removeFile = () => {
                 @click="triggerFileUpload"
               >
                 <input
-                  type="file"
                   ref="fileInput"
-                  @change="handleFileUpload"
-                  accept="application/pdf"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
                   style="display: none"
+                  @change="handleFileUpload"
                 />
                 <div class="upload-box">
                   <div class="upload-icon">
@@ -257,8 +319,18 @@ const removeFile = () => {
 
               <div v-else class="preview-container">
                 <div class="close-icon" @click="removeFile">✖</div>
-                <iframe :src="file.url" width="100%" height="500px"></iframe>
-                <p>{{ file.name }}</p>
+                <div v-if="isPdf(file.type)">
+                  <iframe :src="file.url" width="100%" height="500px" />
+                  <p>{{ file.name }}</p>
+                </div>
+                <div v-else class="document-icon-box">
+                  <v-icon
+                    color="black"
+                    icon="mdi-file-document-check"
+                    size="60"
+                  />
+                  <p>{{ file.name }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -275,6 +347,7 @@ const removeFile = () => {
               Notice period
             </div>
             <v-text-field
+              v-model="user.noticePeriod"
               rounded="0.375rem"
               color="#111827"
               base-color="#111827"
@@ -282,7 +355,7 @@ const removeFile = () => {
               hide-details
               density="compact"
               variant="outlined"
-            ></v-text-field>
+            />
           </div>
           <div
             :class="`custom-card${
@@ -297,6 +370,7 @@ const removeFile = () => {
               Expected salary
             </div>
             <v-text-field
+              v-model="user.expectedSalary"
               rounded="0.375rem"
               color="#111827"
               base-color="#111827"
@@ -304,12 +378,12 @@ const removeFile = () => {
               hide-details
               density="compact"
               variant="outlined"
-            ></v-text-field>
+            />
           </div>
           <div class="d-flex justify-center">
-            <v-btn class="submit-btn">
+            <v-btn class="submit-btn" @click="submit">
               Let’s talk
-              <template v-slot:append>
+              <template #append>
                 <v-icon color="white">mdi-arrow-right-thin</v-icon>
               </template>
             </v-btn>
@@ -317,7 +391,7 @@ const removeFile = () => {
         </div>
       </v-col>
     </v-row>
-    <div :class="`line${smAndDown ? '__sm' : '__lg'}`"></div>
+    <div :class="`line${smAndDown ? '__sm' : '__lg'}`" />
 
     <!-- Footer  -->
     <v-row no-gutters :class="`custom-footer${smAndDown ? '__sm' : '__lg'}`">

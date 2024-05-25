@@ -2,8 +2,13 @@
 // import HelloWorld from '@/components/HelloWorld.vue';
 import { useTheme, useDisplay } from 'vuetify';
 import { ref } from 'vue';
-
+import axios from 'axios';
 const { width, smAndDown, mobile, mdAndUp } = useDisplay();
+import { EmailParams, MailerSend, Recipient, Sender } from 'mailersend';
+
+const mailerSend = new MailerSend({
+  apiKey: process.env.MAILERSEND_API_KEY || '',
+});
 
 const jsonLd = JSON.stringify(
   {
@@ -21,10 +26,68 @@ interface FilePreview {
   name: string;
   url: string;
   type: string;
+  base64: any;
 }
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const file = ref<FilePreview | null>(null);
+
+const form = ref();
+const valid = ref(false);
+const name = ref('');
+const phone = ref('');
+const email = ref('');
+// const file = ref<File | null>(null);
+const noticePeriod = ref('');
+const expectedSalary = ref('');
+
+const sendEmail = () => {
+  let data = JSON.stringify({
+    from: {
+      email: process.env.VITE_APP_MAILERSEND_FROM_EMAIL || '',
+      name: process.env.VITE_APP_MAILERSEND_FROM_NAME || '',
+    },
+    to: [
+      {
+        email: email.value,
+        name: name.value,
+      },
+    ],
+    subject: `'New application from ${name.value}`,
+    html: `<p>Hi,</p>
+      <p>My name is <b>${name.value}</b>,</p>
+      <p>My phone number is <b>${phone.value}</b>,</p> 
+      <p>My email address is <b>${email.value}</b>,</p> 
+      <p>I've a notice period of <b>${noticePeriod.value}</b> and my expected salary is <b>${expectedSalary.value}</b>.</p> 
+      <p> I've attached my resume. I'm looking forward to hear from you.</p>`,
+    attachments: [
+      {
+        filename: file.value?.name,
+        content: file.value?.url?.split(',')[1],
+      },
+    ],
+  });
+
+  let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: process.env.VITE_APP_MAILERSEND_API_URL || '',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.VITE_APP_MAILERSEND_API_KEY}` || '',
+    },
+    data: data,
+  };
+
+  axios
+    .request(config)
+    .then(response => {
+      console.log(JSON.stringify(response.data));
+    })
+    .catch(error => {
+      console.log(error);
+    });
+};
 
 const triggerFileUpload = () => {
   fileInput.value?.click();
@@ -40,10 +103,23 @@ const handleFileUpload = (event: Event) => {
         name: selectedFile.name,
         url: e.target?.result as string,
         type: selectedFile.type,
+        base64: convertToBase64(selectedFile),
       };
     };
     reader.readAsDataURL(selectedFile);
   }
+};
+
+const convertToBase64 = (file: any) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => {
+    return reader?.result?.split(',')[1];
+  };
+  reader.onerror = error => {
+    console.error('Error: ', error);
+    return null;
+  };
 };
 
 const removeFile = () => {
@@ -177,144 +253,182 @@ const removeFile = () => {
           Get matched today
         </div>
 
-        <div
+        <!-- <div
           :class="`custom-card${smAndDown ? '__sm' : '__lg'}--content--form`"
-        >
-          <div
-            :class="`custom-card${
-              smAndDown ? '__sm' : '__lg'
-            }--content--form--item`"
-          >
+        > -->
+          <v-form ref="form" v-model="valid" @submit.prevent="sendEmail" :class="`custom-card${smAndDown ? '__sm' : '__lg'}--content--form`">
             <div
               :class="`custom-card${
                 smAndDown ? '__sm' : '__lg'
-              }--content--form--item--label`"
+              }--content--form--item`"
             >
-              Name
-            </div>
-            <v-text-field
-              rounded="0.375rem"
-              color="#111827"
-              base-color="#111827"
-              width="100%"
-              hide-details
-              density="compact"
-              variant="outlined"
-            ></v-text-field>
-          </div>
-          <div
-            :class="`custom-card${
-              smAndDown ? '__sm' : '__lg'
-            }--content--form--item`"
-          >
-            <div
-              :class="`custom-card${
-                smAndDown ? '__sm' : '__lg'
-              }--content--form--item--label`"
-            >
-              Phone
-            </div>
-            <v-text-field
-              rounded="0.375rem"
-              color="#111827"
-              base-color="#111827"
-              width="100%"
-              hide-details
-              density="compact"
-              variant="outlined"
-            ></v-text-field>
-          </div>
-          <div :class="`custom-card${
-              smAndDown ? '__sm' : '__lg'
-            }--content--form--item`">
-            <div
-              :class="`custom-card${
-                smAndDown ? '__sm' : '__lg'
-              }--content--form--item--label`"
-            >
-            Upload
-            </div>
-            <div>
               <div
-                v-if="!file"
-                class="upload-container"
-                @click="triggerFileUpload"
+                :class="`custom-card${
+                  smAndDown ? '__sm' : '__lg'
+                }--content--form--item--label`"
               >
-                <input
-                  type="file"
-                  ref="fileInput"
-                  @change="handleFileUpload"
-                  accept="application/pdf"
-                  style="display: none"
-                />
-                <div class="upload-box">
-                  <div class="upload-icon">
-                    <v-icon>advance:upload</v-icon>
+                Name
+              </div>
+              <v-text-field
+                v-model="name"
+                :rules="[v => !!v || 'Name is required']"
+                required
+                rounded="0.375rem"
+                color="#111827"
+                base-color="#111827"
+                width="100%"
+                density="compact"
+                variant="outlined"
+              ></v-text-field>
+            </div>
+            <div
+              :class="`custom-card${
+                smAndDown ? '__sm' : '__lg'
+              }--content--form--item`"
+            >
+              <div
+                :class="`custom-card${
+                  smAndDown ? '__sm' : '__lg'
+                }--content--form--item--label`"
+              >
+                Phone
+              </div>
+              <v-text-field
+                v-model="phone"
+                required
+                :rules="[v => !!v || 'Phone is required']"
+                rounded="0.375rem"
+                color="#111827"
+                base-color="#111827"
+                width="100%"
+                density="compact"
+                variant="outlined"
+              ></v-text-field>
+            </div>
+            <div
+              :class="`custom-card${
+                smAndDown ? '__sm' : '__lg'
+              }--content--form--item`"
+            >
+              <div
+                :class="`custom-card${
+                  smAndDown ? '__sm' : '__lg'
+                }--content--form--item--label`"
+              >
+                Email
+                <!-- <small>(optional)</small> -->
+              </div>
+              <v-text-field
+                v-model="email"
+                :rules="[v => /.+@.+/.test(v) || 'E-mail must be valid']"
+                rounded="0.375rem"
+                color="#111827"
+                base-color="#111827"
+                width="100%"
+                density="compact"
+                variant="outlined"
+              ></v-text-field>
+            </div>
+            <div
+              :class="`custom-card${
+                smAndDown ? '__sm' : '__lg'
+              }--content--form--item`"
+              style="padding-bottom: 1.25rem"
+            >
+              <div
+                :class="`custom-card${
+                  smAndDown ? '__sm' : '__lg'
+                }--content--form--item--label`"
+              >
+                Upload
+              </div>
+              <div>
+                <div
+                  v-if="!file"
+                  class="upload-container"
+                  @click="triggerFileUpload"
+                >
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    @change="handleFileUpload"
+                    accept="application/pdf"
+                    style="display: none"
+                  />
+                  <div class="upload-box">
+                    <div class="upload-icon">
+                      <v-icon>advance:upload</v-icon>
+                    </div>
+                    <div>Click here to upload your files</div>
                   </div>
-                  <div>Click here to upload your files</div>
+                </div>
+
+                <div v-else class="preview-container">
+                  <div class="close-icon" @click="removeFile">✖</div>
+                  <iframe :src="file.url" width="100%" height="500px"></iframe>
+                  <p>{{ file.name }}</p>
                 </div>
               </div>
-
-              <div v-else class="preview-container">
-                <div class="close-icon" @click="removeFile">✖</div>
-                <iframe :src="file.url" width="100%" height="500px"></iframe>
-                <p>{{ file.name }}</p>
+            </div>
+            <div
+              :class="`custom-card${
+                smAndDown ? '__sm' : '__lg'
+              }--content--form--item`"
+            >
+              <div
+                :class="`custom-card${
+                  smAndDown ? '__sm' : '__lg'
+                }--content--form--item--label`"
+              >
+                Notice period
               </div>
+              <v-text-field
+                v-model="noticePeriod"
+                :rules="[v => !!v || 'Notice Period is required']"
+                required
+                rounded="0.375rem"
+                color="#111827"
+                base-color="#111827"
+                width="100%"
+                density="compact"
+                variant="outlined"
+              ></v-text-field>
             </div>
-          </div>
-          <div
-            :class="`custom-card${
-              smAndDown ? '__sm' : '__lg'
-            }--content--form--item`"
-          >
             <div
               :class="`custom-card${
                 smAndDown ? '__sm' : '__lg'
-              }--content--form--item--label`"
+              }--content--form--item`"
             >
-              Notice period
+              <div
+                :class="`custom-card${
+                  smAndDown ? '__sm' : '__lg'
+                }--content--form--item--label`"
+              >
+                Expected salary
+              </div>
+              <v-text-field
+                v-model="expectedSalary"
+                :rules="[v => !!v || 'Expected Salary is required']"
+                required
+                rounded="0.375rem"
+                color="#111827"
+                base-color="#111827"
+                width="100%"
+                density="compact"
+                variant="outlined"
+              ></v-text-field>
             </div>
-            <v-text-field
-              rounded="0.375rem"
-              color="#111827"
-              base-color="#111827"
-              width="100%"
-              hide-details
-              density="compact"
-              variant="outlined"
-            ></v-text-field>
-          </div>
-          <div
-            :class="`custom-card${
-              smAndDown ? '__sm' : '__lg'
-            }--content--form--item`"
-          >
-            <div
-              :class="`custom-card${
-                smAndDown ? '__sm' : '__lg'
-              }--content--form--item--label`"
-            >
-              Expected salary
+            <div class="d-flex justify-center">
+              <!-- :disabled="!valid" -->
+              <v-btn class="submit-btn" type="submit">
+                Let’s talk
+                <template v-slot:append>
+                  <v-icon color="white">mdi-arrow-right-thin</v-icon>
+                </template>
+              </v-btn>
             </div>
-            <v-text-field
-              rounded="0.375rem"
-              color="#111827"
-              base-color="#111827"
-              width="100%"
-              hide-details
-              density="compact"
-              variant="outlined"
-            ></v-text-field>
-          </div>
-          <div class="d-flex justify-center">
-            <v-btn class="submit-btn">
-              Let’s talk
-              <template v-slot:append>
-                <v-icon color="white">mdi-arrow-right-thin</v-icon>
-              </template>
-            </v-btn>
-          </div>
-        </div>
+          </v-form>
+        <!-- </div> -->
       </v-col>
     </v-row>
     <div :class="`line${smAndDown ? '__sm' : '__lg'}`"></div>

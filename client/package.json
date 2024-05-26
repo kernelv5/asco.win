@@ -50,6 +50,7 @@
     "vue": "^3.3.8",
     "vue-email": "^0.8.11",
     "vue-router": "^4.2.5",
+    "vue3-toastify": "^0.2.1",
     "vuetify": "^3.4.2",
     "webfontloader": "^1.6.28"
   },

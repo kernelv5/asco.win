@@ -12,7 +12,7 @@ Make sure you have the following installed on your system:
 
 ## Environment Variables
 
-Create a `.env` file in the root of your backend directory with the following content:
+Modify or Create a `.env` file in the root of your server directory with the following content:
 
 ```env
 MAILERSEND_API_KEY=your_mailersend_api_key
@@ -21,6 +21,17 @@ MAILERSEND_FROM_NAME=Advanced Solution
 MAILERSEND_TO_EMAIL=email_where_you_want_to_get_the_email(eg. receiver_mail@kernalapp.com)
 MAILERSEND_TO_NAME=KERNALAPP
 ```
+
+Modify or Create a `.env` file in the root of your client directory with the following content:
+
+```env
+VITE_APP_TITLE=Advanced Solution
+VITE_APP_WEBSTORAGE_NAMESPACE=kernalapp
+VITE_APP_API_SERVER=server_url (e.g. http://localhost:3000)
+VITE_APP_API_SERVER_BASE=server_url (e.g. http://localhost:3000)
+YARN_IGNORE_NODE=1
+```
+
 ###### Set up both the backend and frontend and start the application locally.
 
 ## Navigate to the frontend directory

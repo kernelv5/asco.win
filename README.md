@@ -53,7 +53,7 @@ npm start
 ###### The backend server should now be running on http://localhost:3000
 
 ## Project structure
-
+```
 .
 ├── server
 │   ├── .env                 # Environment variables for the backend
@@ -68,7 +68,7 @@ npm start
     ├── package.json         # NPM package configuration
     ├── vite.config.js       # Vite configuration
     └── ...
-
+```
 
 ## Build the frontend project
 

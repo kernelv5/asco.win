@@ -41,7 +41,7 @@ cd client
 npm install --legacy-peer-deps
 npm run dev
 ```
-The backend server should now be running on http://localhost:5173
+###### The frontend client should now be running on http://localhost:5173
 
 ## Navigate to the backend directory
 

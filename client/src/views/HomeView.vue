@@ -38,7 +38,10 @@ const email = ref('');
 const noticePeriod = ref('');
 const expectedSalary = ref('');
 const showFileRequired = ref(false);
+const showFileSizeExceed = ref(false);
 const sendingEmailLoader = ref(false);
+const MAX_FILE_SIZE_MB = 2;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const sendEmail = async () => {
   try {
@@ -129,6 +132,18 @@ const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
     const selectedFile = target.files[0];
+    if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
+      toast.error(`File size should be less than ${MAX_FILE_SIZE_MB} MB`, {
+        autoClose: 3000,
+        position: toast.POSITION.TOP_CENTER,
+        pauseOnHover: true,
+        closeButton: true,
+        theme: 'colored',
+      });
+      showFileSizeExceed.value = true;
+      return;
+    }
+    showFileSizeExceed.value = false;
     const reader = new FileReader();
     reader.onload = e => {
       file.value = {
@@ -308,7 +323,8 @@ const removeFile = () => {
               v-model="name"
               :rules="[
                 v => !!v || 'Name is required',
-                v => v.length <= 255 || 'Name must be less than 255 characters',
+                v => v.length <= 70 || 'Name must be less than 70 characters',
+                v => /^[a-zA-Z\s\.\-:]*$/.test(v) || 'Only alphabetic characters, spaces, ., -, and : are allowed'
               ]"
               required
               rounded="0.375rem"
@@ -337,6 +353,7 @@ const removeFile = () => {
               :rules="[
                 v => !!v || 'Phone is required',
                 v => !isNaN(v) || 'Phone must be a number',
+                v => v.length > 10 || 'Phone number must be greater than 10 characters',
                 v =>
                   v.length <= 15 ||
                   'Phone number must be less than 15 characters',
@@ -442,7 +459,7 @@ const removeFile = () => {
                 </div>
               </div>
               <div
-                v-if="showFileRequired"
+                v-if="showFileRequired || showFileSizeExceed"
                 style="
                   color: #b00020;
                   padding-inline: 16px;
@@ -450,7 +467,7 @@ const removeFile = () => {
                   font-size: 12px;
                 "
               >
-                File is required and must be valid pdf or doc file.
+              <span v-if="showFileRequired"> File is required and must be valid pdf or doc file. </span><span v-if="showFileSizeExceed">Max {{ MAX_FILE_SIZE_MB }}MB allowed.</span>
               </div>
             </div>
           </div>
@@ -471,8 +488,8 @@ const removeFile = () => {
               :rules="[
                 v => !!v || 'Notice Period is required',
                 v =>
-                  v.length <= 255 ||
-                  'Notice Period must be less than 255 characters',
+                  v.length <= 50 ||
+                  'Notice Period must be less than 50 characters',
               ]"
               required
               rounded="0.375rem"
@@ -499,9 +516,10 @@ const removeFile = () => {
               v-model="expectedSalary"
               :rules="[
                 v => !!v || 'Expected Salary is required',
+                v => !isNaN(v) || 'Expected Salary must be a number',
                 v =>
-                  v.length <= 255 ||
-                  'Expected Salary must be less than 255 characters',
+                  v.length <= 7 ||
+                  'Expected Salary must be less than 7 characters',
               ]"
               required
               rounded="0.375rem"
@@ -562,7 +580,10 @@ const removeFile = () => {
           Need any support?
         </div>
         <div :class="`custom-footer${smAndDown ? '__sm' : '__lg'}--address`">
-          Call to 01753970989 | Whatsapp ( Hyperline https://wa.me/01753970989 )
+          Call to +88-01753970989 |
+          <a href="https://wa.me/8801753970989" target="_blank">
+            Click to Connect Whatsaapp
+          </a>
         </div>
         <div :class="`custom-footer${smAndDown ? '__sm' : '__lg'}--info`">
           info@asco.win
@@ -579,7 +600,7 @@ const removeFile = () => {
           Technical Support
         </div>
         <div :class="`custom-footer${smAndDown ? '__sm' : '__lg'}--address`">
-          Kernelv5 Inc
+          <a href="https://kernelv5.com/" target="_blank">kernelv5.com</a>
         </div>
       </v-col>
     </v-row>

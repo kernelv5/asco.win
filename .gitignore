@@ -37,3 +37,7 @@ coverage/
 # Special File
 .husky/
 src/Meta.ts
+
+
+client/.env
+server/.env

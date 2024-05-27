@@ -353,7 +353,7 @@ const removeFile = () => {
               :rules="[
                 v => !!v || 'Phone is required',
                 v => !isNaN(v) || 'Phone must be a number',
-                v => v.length > 10 || 'Phone number must be greater than 10 characters',
+                // v => v.length > 10 || 'Phone number must be greater than 10 characters',
                 v =>
                   v.length <= 15 ||
                   'Phone number must be less than 15 characters',

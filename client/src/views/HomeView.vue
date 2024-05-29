@@ -13,9 +13,9 @@ const jsonLd = JSON.stringify(
     '@schema': 'https://json.schemastore.org/jsonld.json',
     '@context': 'http://schema.org',
     '@type': 'WebSite',
-    name: 'Advanced Solution',
+    name: 'asco.win',
     url: 'https://github.com/shawon3719',
-    description: 'Advanced Solution',
+    description: 'asco.win',
   },
   null,
   2
@@ -566,7 +566,7 @@ const removeFile = () => {
           Eva Rose , House # 6/B Road # 44 , Gulshan # 2 Dhaka -1212
         </div>
         <div :class="`custom-footer${smAndDown ? '__sm' : '__lg'}--info`">
-          Our offices are open from 9am to 5pm (Monday to Friday)
+          Our offices are open from 9am to 5pm (Satruday to Thursday)
         </div>
       </v-col>
       <v-col
@@ -606,8 +606,8 @@ const removeFile = () => {
     </v-row>
   </v-container>
   <teleport to="head">
-    <meta name="keyword" content="advanced solution" />
-    <meta name="description" content="Advanced Solution" />
+    <meta name="keyword" content="asco.win" />
+    <meta name="description" content="asco.win" />
     <component :is="'script'" type="application/ld+json">
       {{ jsonLd }}
     </component>

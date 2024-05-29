@@ -61,7 +61,7 @@ onMounted(() => {
 <template>
   <v-app theme="light">
     <v-app-bar absolute :elevation="0" color="#f7fcfc" :class="`advanced-header${smAndDown ? '__sm' : '__lg'}`">
-      <div>Advanced Solution</div>
+      <div>asco.win</div>
     </v-app-bar>
     <v-main :class="`custom-main${smAndDown ? '__sm' : '__lg'}`">
       <router-view v-slot="{ Component, route }">

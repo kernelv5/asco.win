@@ -90,8 +90,11 @@ const sendEmail = async () => {
             closeButton: true,
             theme: 'colored',
           });
-          sendingEmailLoader.value = false;
+          // sendingEmailLoader.value = false;
+          // form.value.reset();
           form.value.reset();
+          form.value.resetValidation?.();
+          sendingEmailLoader.value = false;
           file.value = null;
           name.value = '';
           phone.value = '';
@@ -112,8 +115,9 @@ const sendEmail = async () => {
         });
     }
   } catch (error) {
-    console.log(error);
-    toast.error(error?.message, {
+    // console.log(error);
+    const err = error as Error;
+    toast.error(err?.message, {
       autoClose: 3000,
       position: toast.POSITION.TOP_CENTER,
       pauseOnHover: true,
@@ -172,6 +176,39 @@ const removeFile = () => {
     showFileRequired.value = true;
   }
 };
+
+const nameRules = [
+  (v: string) => !!v || 'Name is required',
+  (v: string) => v.length <= 70 || 'Name must be less than 70 characters',
+  (v: string) =>
+    /^[a-zA-Z\s\.\-:]*$/.test(v) ||
+    'Only alphabetic characters, spaces, ., -, and : are allowed',
+];
+
+const emailRules = [
+  (v: string) =>
+    !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'E-mail must be valid',
+];
+
+const phoneRules = [
+  (v: string) => !!v || 'Phone number is required',
+  (v: string) => !isNaN(Number(v)) || 'Phone must be a number',
+  (v: string) =>
+    v.length <= 15 || 'Phone number must be less than 15 characters',
+];
+
+const noticePeriodRules = [
+  (v: string) => !!v || 'Notice Period is required',
+  (v: string) =>
+    v.length <= 50 || 'Notice Period must be less than 50 characters',
+];
+
+const expectedSalaryRules = [
+  (v: string) => !!v || 'Expected Salary is required',
+  (v: string) => !isNaN(Number(v)) || 'Expected Salary must be a number',
+  (v: string) =>
+    v.length <= 7 || 'Expected Salary must be less than 7 characters',
+];
 </script>
 
 <template>
@@ -304,7 +341,7 @@ const removeFile = () => {
           ref="form"
           v-model="valid"
           @submit.prevent="sendEmail"
-          :validate-on-sumit="true"
+          :validate-on-submit="true"
           :class="`custom-card${smAndDown ? '__sm' : '__lg'}--content--form`"
         >
           <div
@@ -321,11 +358,7 @@ const removeFile = () => {
             </div>
             <v-text-field
               v-model="name"
-              :rules="[
-                v => !!v || 'Name is required',
-                v => v.length <= 70 || 'Name must be less than 70 characters',
-                v => /^[a-zA-Z\s\.\-:]*$/.test(v) || 'Only alphabetic characters, spaces, ., -, and : are allowed'
-              ]"
+              :rules="nameRules"
               required
               rounded="0.375rem"
               color="#111827"
@@ -350,14 +383,7 @@ const removeFile = () => {
             <v-text-field
               v-model="phone"
               required
-              :rules="[
-                v => !!v || 'Phone is required',
-                v => !isNaN(v) || 'Phone must be a number',
-                // v => v.length > 10 || 'Phone number must be greater than 10 characters',
-                v =>
-                  v.length <= 15 ||
-                  'Phone number must be less than 15 characters',
-              ]"
+              :rules="phoneRules"
               rounded="0.375rem"
               color="#111827"
               base-color="#111827"
@@ -381,9 +407,7 @@ const removeFile = () => {
             </div>
             <v-text-field
               v-model="email"
-              :rules="[
-                v => !v || /.+@.+\..+/.test(v) || 'E-mail must be valid',
-              ]"
+              :rules="emailRules"
               rounded="0.375rem"
               color="#111827"
               base-color="#111827"
@@ -467,7 +491,12 @@ const removeFile = () => {
                   font-size: 12px;
                 "
               >
-              <span v-if="showFileRequired"> File is required and must be valid pdf or doc file. </span><span v-if="showFileSizeExceed">Max {{ MAX_FILE_SIZE_MB }}MB allowed.</span>
+                <span v-if="showFileRequired">
+                  File is required and must be valid pdf or doc file.
+                </span>
+                <span v-if="showFileSizeExceed">
+                  Max {{ MAX_FILE_SIZE_MB }}MB allowed.
+                </span>
               </div>
             </div>
           </div>
@@ -485,12 +514,7 @@ const removeFile = () => {
             </div>
             <v-text-field
               v-model="noticePeriod"
-              :rules="[
-                v => !!v || 'Notice Period is required',
-                v =>
-                  v.length <= 50 ||
-                  'Notice Period must be less than 50 characters',
-              ]"
+              :rules="noticePeriodRules"
               required
               rounded="0.375rem"
               color="#111827"
@@ -514,13 +538,7 @@ const removeFile = () => {
             </div>
             <v-text-field
               v-model="expectedSalary"
-              :rules="[
-                v => !!v || 'Expected Salary is required',
-                v => !isNaN(v) || 'Expected Salary must be a number',
-                v =>
-                  v.length <= 7 ||
-                  'Expected Salary must be less than 7 characters',
-              ]"
+              :rules="expectedSalaryRules"
               required
               rounded="0.375rem"
               color="#111827"

@@ -1,0 +1,8 @@
+{
+    "name": "asco-root",
+    "version": "1.0.0",
+    "scripts": {
+      "start:all": "bash run-all.sh"
+    }
+  }
+  
